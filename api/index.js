@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const mangaPillRoutes = require('./routes/mangaPill');
+const mangaPillRoutes = require('../routes/mangaPill');
 
 const app = express();
 
@@ -17,7 +17,6 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api/mangapill', mangaPillRoutes);
 
-// Health check endpoint
 app.get('/', (req, res) => {
   res.json({ message: 'YomuAPI - Manga Scraper API is running!' });
 });

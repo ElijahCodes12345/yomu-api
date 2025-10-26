@@ -111,6 +111,10 @@ module.exports = NewSource;
 - **Cache timeout**: Edit `cacheTimeout` in model files (default: 5 minutes)
 - **Scraping method**: Change in `requestManager.request()` calls (`'axios'`, `'cloudscraper'`, `'playwright'`)
 
+## Note
+
+To access the images for some sources, you must past a referrer url. Eg: mangapill.com
+
 ## Dependencies
 
 - `express` - Web framework
