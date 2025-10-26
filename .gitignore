@@ -1,6 +1,4 @@
 .env
 node_modules/
-codedumpsite/ 
-data/
 test.js
 .vercel
