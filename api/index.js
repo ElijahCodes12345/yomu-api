@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const mangaPillRoutes = require('./routes/mangaPill');
+const mangaPillRoutes = require('../routes/mangaPill');
 
 const app = express();
 
