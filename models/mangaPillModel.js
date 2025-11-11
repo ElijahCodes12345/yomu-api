@@ -102,11 +102,11 @@ class MangaPillModel {
     return this.processMangaList(rawNewManga);
   }
 
-  getNewChapters = async () => {
-    const key = 'new_chapters';
+  getLatest = async () => {
+    const key = 'mangapill_latest';
     const rawNewChapters = await this.cache.wrap(
       key,
-      this.scraper.getNewChapters.bind(this.scraper)
+      this.scraper.getLatest.bind(this.scraper)
     );
     
     return this.processLatestUpdates(rawNewChapters);

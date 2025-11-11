@@ -350,7 +350,7 @@ class MangaPill {
     }
   }
 
-  async getNewChapters() {
+  async getLatest() {
     try {
       const html = await requestManager.request(`${this.baseUrl}/chapters`, 'GET', {}, {}, 'axios');
       const $ = cheerio.load(html);

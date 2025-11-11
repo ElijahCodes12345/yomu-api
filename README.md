@@ -1,6 +1,6 @@
 # Yomu-API
 
-A flexible Node.js scraper for aggregating manga and novel(later) content from multiple sources. It is still under-construction so only one manga source exist as for now.
+A flexible Node.js scraper for aggregating manga and novel(later) content from multiple sources. It is still under-construction.
 
 ## ⚠️ Disclaimer
 
@@ -33,44 +33,98 @@ Server runs on `http://localhost:3000` (or your configured port)
 
 ### API Endpoints
 
-#### Search Manga
+#### MangaPill Endpoints
+
+##### Search Manga
 ```
 GET /api/mangapill/quick-search?q=naruto
 ```
 
-#### Get Manga Details
+##### Get Manga Details
 ```
 GET /api/mangapill/:id/:slug
 ```
 
-#### Get Chapter
+##### Get Chapter
 ```
 GET /api/mangapill/chapters/:id/:slug
 ```
 
-#### Trending Manga
+##### Trending Manga
 ```
 GET /api/mangapill/trending
 ```
 
-#### Advanced Search
+##### Advanced Search
 ```
 GET /api/mangapill/search?q=naruto&type=manga&status=publishing&page=1
 ```
 
-#### New Manga
+##### New Manga
 ```
 GET /api/mangapill/new
 ```
 
-#### New Chapters
+##### New Chapters
 ```
 GET /api/mangapill/new-chapters
 ```
 
-#### Featured Chapters
+##### Featured Chapters
 ```
 GET /api/mangapill/featured-chapters
+```
+
+#### FlameComics Endpoints
+
+##### Search Manga/Novel
+```
+GET /api/flamecomics/search?q=naruto
+```
+
+##### Advanced Search
+```
+GET /api/flamecomics/advanced-search?q=naruto&type=manga&status=publishing&genre=action
+```
+
+##### Get Manga Details
+```
+GET /api/flamecomics/manga/:id
+```
+
+##### Get Novel Details
+```
+GET /api/flamecomics/novel/:id
+```
+
+##### Get Manga Chapter
+```
+GET /api/flamecomics/manga/:mangaId/chapter/:token
+```
+
+##### Get Popular Manga
+```
+GET /api/flamecomics/popular
+```
+
+##### Get New Manga
+```
+GET /api/flamecomics/new-manga
+```
+
+##### Get Latest Updates
+```
+GET /api/flamecomics/latest
+```
+
+##### Get Staff Picks
+```
+GET /api/flamecomics/staff-picks
+```
+
+##### Get Novels
+```
+GET /api/flamecomics/novels
 ```
 
 ## Project Structure
@@ -150,6 +204,5 @@ This tool is provided as-is for educational purposes. The developers:
 - Do not host or distribute any manga content
 - Do not encourage violation of terms of service
 - Are not responsible for how users deploy this software
-- Recommend respecting copyright and website policies
 
 Use responsibly and at your own risk.
