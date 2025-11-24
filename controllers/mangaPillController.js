@@ -212,13 +212,13 @@ class MangaPillController {
     }
   }
 
-  // Get new chapters from MangaPill
-  getNewChapters = async (req, res) => {
+  // Get latest chapters from MangaPill
+  getLatest = async (req, res) => {
     try {
-      const newChapters = await this.model.getNewChapters();
+      const latest = await this.model.getLatest();
       res.json({
         status: 200,
-        results: newChapters || []
+        results: latest || []
       });
     } catch (error) {
       res.status(500).json({ 

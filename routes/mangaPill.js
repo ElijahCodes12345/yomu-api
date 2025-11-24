@@ -15,8 +15,8 @@ router.get('/search', mangaPillController.advancedSearch);
 // Route to get new manga
 router.get('/new', mangaPillController.getNewManga);
 
-// Route to get new chapters
-router.get('/new-chapters', mangaPillController.getNewChapters);
+// Route to get latest chapters
+router.get('/latest', mangaPillController.getLatest);
 
 // Route to get featured chapters
 router.get('/featured-chapters', mangaPillController.getFeaturedChapters);

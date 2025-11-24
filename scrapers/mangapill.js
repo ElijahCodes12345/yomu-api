@@ -24,9 +24,6 @@ class MangaPill {
         const type = $(element).find('.ml-3 .flex-col .flex-wrap > div:nth-child(1)').text().trim();
         const year = $(element).find('.ml-3 .flex-col .flex-wrap > div:nth-child(2)').text().trim();
         const status = $(element).find('.ml-3 .flex-col .flex-wrap > div:nth-child(3)').text().trim();
-        
-
-        console.log(title, id, cover, type, alternateTitle);
 
         if (title && id) {
           results.push({
@@ -55,9 +52,7 @@ class MangaPill {
       const $ = cheerio.load(html);
       
       const title = $('h1.font-bold.text-lg.md\\:text-2xl').first().text().trim();
-      const alternateTitle = $('.mb-3 div.text-sm.text-secondary').text().trim()
-
-      console.log(`AltTitle: ${alternateTitle}`);
+      const alternateTitle = $('.mb-3 div.text-sm.text-secondary').text().trim();
       
       const cover = $('.flex-shrink-0 > img').first().attr('data-src');
       
@@ -141,12 +136,8 @@ class MangaPill {
           pages.push(src);
         }
       });
-
-      console.log(pages);
       
       const mangaId = chapterId.split('-')[0];
-      
-      console.log(pages);
       
       return {
         id: chapterId,
@@ -180,8 +171,7 @@ class MangaPill {
           const id = mangaMatch?.[1] || '';
           const slug = mangaMatch?.[2] || '';
           const cover = $(element).find('figure img').attr('src') || $(element).find('figure img').attr('data-src') || '';
-          
-          console.log(id, slug)
+      
           if (title && id) {
             const mangaData = {
               title,
@@ -248,8 +238,6 @@ class MangaPill {
         const type =  $(element).find('.flex > div > div:nth-child(1)').text();
         const year =  $(element).find('.flex > div > div:nth-child(2)').text();
         const status =  $(element).find('.flex > div > div:nth-child(3)').text();
-        
-        console.log(`title: ${title}, id: ${id}, cover: ${cover}, type: ${type}, year: ${year}, status: ${status}`);
 
         if (title && id) {
           const mangaData = {
@@ -330,8 +318,6 @@ class MangaPill {
         const mangaId = $(element).find('a').attr('href')?.match(/\/manga\/([^\/]+)\/(.*)/)?.slice(1).join('/');
         const cover = $(element).find('img').attr('data-src');
 
-        console.log(`title: ${title}, mangaId: ${mangaId}, alternateTitle: ${alternateTitle}, cover: ${cover}`);
-        
         if (mangaId) {
           const mangaObj = {
             title,
@@ -364,7 +350,7 @@ class MangaPill {
     }
   }
 
-  async getNewChapters() {
+  async getLatest() {
     try {
       const html = await requestManager.request(`${this.baseUrl}/chapters`, 'GET', {}, {}, 'axios');
       const $ = cheerio.load(html);
@@ -378,8 +364,6 @@ class MangaPill {
         const chapterNumber = $(element).find('.px-1 a:nth-child(1) > div').text().trim();
         const mangaId = $(element).find('.px-1 a:nth-child(2)').attr('href')?.match(/\/manga\/([^\/]+)\/(.*)/)?.slice(1).join('/');
         const date = $(element).find('.px-1 > div time-ago').attr("datetime");
-
-        console.log(`title: ${title}, chapterId: ${chapterId}, mangaId: ${mangaId}, date: ${date}, alternateTitle: ${alternateTitle}`);
         
         if (title && chapterId) {
           latestUpdates.push({
@@ -424,8 +408,6 @@ class MangaPill {
         const chapterNumber = $(element).find('.pt-2.text-sm a:nth-child(1) > .text-lg').text().trim();
         const mangaId = $(element).find('.pt-2.text-sm a:nth-child(2)').attr('href')?.match(/\/manga\/([^\/]+)\/(.*)/)?.slice(1).join('/');
         const cover = $(element).find('img').attr('src') || $(element).find('img').attr('data-src') || '';
-
-        console.log(`title: ${title}, cover: ${cover}, chapterId: ${chapterId}, mangaId: ${mangaId}`);
 
         if (title && chapterId) {
           featuredChapters.push({
