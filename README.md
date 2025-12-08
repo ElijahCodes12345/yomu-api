@@ -127,6 +127,49 @@ GET /api/flamecomics/staff-picks
 GET /api/flamecomics/novels
 ```
 
+#### MangaPark Endpoints
+
+##### Search Manga
+```
+GET /api/mangapark/search?q=naruto
+```
+
+##### Advanced Search
+```
+GET /api/mangapark/advanced-search?q=naruto&genres_include=action,adventure&genres_exclude=ecchi&orig=ja&lang=en&status=ongoing&upload=ongoing&sortby=field_score&page=1
+```
+
+##### Get Manga Details
+```
+GET /api/mangapark/manga/:id
+```
+
+##### Get Manga Chapter
+```
+GET /api/mangapark/manga/:mangaId/chapter/:chapterId
+```
+*Note: Image URLs are automatically fixed to use the most stable subdomain for reliable loading.*
+
+##### Get Popular Manga
+```
+GET /api/mangapark/popular
+```
+
+##### Get New Manga
+```
+GET /api/mangapark/new-manga
+```
+
+##### Get Latest Updates
+```
+GET /api/mangapark/latest
+```
+
+##### Get Latest Anime
+```
+GET /api/mangapark/latest-anime
+```
+
 ## Project Structure
 
 ```
@@ -156,7 +199,7 @@ class NewSource {
 module.exports = NewSource;
 ```
 
-2. Create a model in `models/` following the same pattern as `mangaPillModel.js`
+2. Create a model in `models/` following the same pattern as for example `mangaPillModel.js`
 
 3. Add routes and controller
 
