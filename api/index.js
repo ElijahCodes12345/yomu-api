@@ -1,9 +1,9 @@
 const express = require('express');
 const cors = require('cors');
-const mangaPillRoutes = require('./routes/mangaPill');
-const flameComicsRoutes = require('./routes/flamecomics');
-const mangaparkRoutes = require('./routes/mangapark');
-const mangafireRoutes = require('./routes/mangafire');
+const mangaPillRoutes = require('../routes/mangaPill');
+const flameComicsRoutes = require('../routes/flamecomics');
+const mangaparkRoutes = require('../routes/mangapark');
+const mangafireRoutes = require('../routes/mangafire');
 
 const app = express();
 
