@@ -17,9 +17,12 @@
   "dependencies": {
     "axios": "^1.13.1",
     "cheerio": "^1.1.0",
+    "cloudscraper": "^4.6.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "jsdom": "^27.0.1",
+    "playwright": "^1.57.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

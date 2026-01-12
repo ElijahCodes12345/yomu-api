@@ -12,22 +12,6 @@ class RequestManager {
     const headers = { ...this.defaultHeaders, ...options.headers };
 
     try {
-      if (scrapingMethod === 'axios') {
-        const config = {
-          method,
-          url,
-          headers,
-          ...options
-        };
-
-        if (['POST', 'PUT'].includes(method.toUpperCase())) {
-          config.data = data;
-        }
-
-        const response = await axios(config);
-        return response.data;
-      } 
-      
       if (scrapingMethod === 'cloudscraper') {
         const cloudscraper = require('cloudscraper');
         return await cloudscraper({
@@ -55,8 +39,25 @@ class RequestManager {
         return html;
       }
       
-      throw new Error(`Scraping method '${scrapingMethod}' not supported`);
+      // Default to axios for everything else
+      const config = {
+        method,
+        url,
+        headers,
+        ...options
+      };
+
+      if (['POST', 'PUT'].includes(method.toUpperCase())) {
+        config.data = data;
+      }
+
+      const response = await axios(config);
+      return response.data;
+
     } catch (error) {
+      if (error.response) {
+          console.error('Error Response Data:', error.response.data); // Debugging
+      }
       throw new Error(`${method.toUpperCase()} request with ${scrapingMethod} failed: ${error.message}`);
     }
   }

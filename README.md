@@ -170,6 +170,55 @@ GET /api/mangapark/latest
 GET /api/mangapark/latest-anime
 ```
 
+#### MangaFire Endpoints
+
+##### Search Manga
+```
+GET /api/mangafire/search/:query
+```
+
+##### Get Manga Details
+```
+GET /api/mangafire/manga/:id
+```
+
+##### Get Chapters
+```
+GET /api/mangafire/manga/:id/chapters/:lang?
+```
+
+##### Get Chapter Images
+```
+GET /api/mangafire/read/:chapterId
+```
+
+##### Get Home Page
+```
+GET /api/mangafire/home
+```
+
+##### Get Genre
+```
+GET /api/mangafire/genre/:genre
+```
+
+##### Get Category
+```
+GET /api/mangafire/category/:category
+```
+*(eg: manga, manhwa)*
+
+##### Get Volumes
+```
+GET /api/mangafire/volumes/:id/:lang?
+```
+
+##### Get Latest/Trending/Updated
+```
+GET /api/mangafire/:pageType
+```
+*(pageType can be: updated, newest, added)*
+
 ## Project Structure
 
 ```
@@ -233,6 +282,12 @@ npm run dev
 ## License Recommendation
 
 See [LICENSE](LICENSE) file.
+
+## Acknowledgments
+
+Special thanks to the following repositories for their logic and implementation details which helped in the development of this scraper:
+- [shafat-96/mangafire](https://github.com/shafat-96/mangafire)
+- [m2k3a/mangayomi-extensions](https://github.com/m2k3a/mangayomi-extensions)
 
 ## Contributing
 
