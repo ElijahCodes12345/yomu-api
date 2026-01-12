@@ -1,7 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const mangaPillRoutes = require('../routes/mangaPill');
+const flameComicsRoutes = require('../routes/flamecomics');
 const mangaparkRoutes = require('../routes/mangapark');
+const mangafireRoutes = require('../routes/mangafire');
 
 const app = express();
 
@@ -17,7 +19,10 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/mangapill', mangaPillRoutes);
+app.use('/api/flamecomics', flameComicsRoutes);
 app.use('/api/mangapark', mangaparkRoutes);
+app.use('/api/mangafire', mangafireRoutes);
+
 
 app.get('/', (req, res) => {
   res.json({ message: 'YomuAPI - Manga Scraper API is running!' });
