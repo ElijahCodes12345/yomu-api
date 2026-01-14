@@ -15,6 +15,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@sparticuz/chromium": "^143.0.4",
     "axios": "^1.13.1",
     "cheerio": "^1.1.0",
     "cloudscraper": "^4.6.0",
@@ -22,7 +23,11 @@
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "jsdom": "^27.0.1",
-    "playwright": "^1.57.0"
+    "playwright": "^1.57.0",
+    "playwright-core": "^1.57.0",
+    "playwright-extra": "^4.3.6",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"
