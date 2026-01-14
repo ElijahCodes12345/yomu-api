@@ -25,21 +25,36 @@ class FlameComics {
       return this.buildId;
     }
 
-    const html = await requestManager.request(this.baseUrl, 'GET', {}, {}, 'axios');
-    const match = html.match(/"buildId":"([^"]+)"/);
-    if (!match) throw new Error('Could not extract buildId from homepage.');
+    const response = await requestManager.request(this.baseUrl, 'GET', {}, {}, 'cloudscraper');
+    
+    let buildId = null;
 
-    this.buildId = match[1];
+    if (typeof response === 'string') {
+      const match = response.match(/"buildId"\s*:\s*"([^"]+)"/);
+      if (match) buildId = match[1];
+    } else if (typeof response === 'object' && response !== null) {
+      // If RequestManager parsed it as JSON (common in Playwright fallbacks)
+      buildId = response.buildId || response.props?.pageProps?.buildId || (response.props && response.props.buildId);
+    }
+
+    if (!buildId) {
+      const snippet = typeof response === 'string' ? response.substring(0, 500) : JSON.stringify(response).substring(0, 500);
+      console.log(`[FlameComics] Failed to extract buildId. Response snippet: ${snippet}`);
+      throw new Error('Could not extract buildId from homepage.');
+    }
+
+    this.buildId = buildId;
     this.lastBuildFetch = now;
     console.log(`[FlameComics] buildId updated: ${this.buildId}`);
     return this.buildId;
+
   }
 
   /** Helper to fetch Next.js data route */
   async fetchNextData(route) {
     const buildId = await this.getBuildId();
     const url = `${this.baseUrl}/_next/data/${buildId}${route}.json`;
-    const data = await requestManager.request(url, 'GET', {}, {}, 'axios');
+    const data = await requestManager.request(url, 'GET', {}, {}, 'cloudscraper');
     return data?.pageProps || {};
   }
 
@@ -50,7 +65,8 @@ class FlameComics {
     }
 
     const url = `${this.baseUrl}/api/series`;
-    const seriesList = await requestManager.request(url, 'GET');
+    // API endpoint may be behind Cloudflare; request with cloudscraper
+    const seriesList = await requestManager.request(url, 'GET', {}, {}, 'cloudscraper');
     if (Array.isArray(seriesList)) {
       this.seriesCache = { data: seriesList, time: now };
     }
@@ -204,9 +220,9 @@ class FlameComics {
   async getMangaChapter(mangaId, token) {
     try {
       const url = `${this.baseUrl}/series/${mangaId}/${token}`;
-      const html = await requestManager.request(url, 'GET', {}, {}, 'axios');
+      const html = await requestManager.request(url, 'GET', {}, {}, 'cloudscraper');
       
-      const scriptMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/);
+      const scriptMatch = html.match(/<script\s+id="__NEXT_DATA__"\s+type="application\/json"[^>]*>([\s\S]*?)<\/script>/);
       if (scriptMatch) {
         const jsonData = JSON.parse(scriptMatch[1]);
         const pageProps = jsonData?.props?.pageProps;
