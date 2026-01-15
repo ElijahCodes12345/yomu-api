@@ -2,9 +2,7 @@
 
 A flexible Node.js scraper for aggregating manga and novel(later) content from multiple sources. It is still under-construction.
 
-## ⚠️ Disclaimer
 
-This project is for **educational purposes only**. Users are responsible for complying with the terms of service of any websites they scrape and applicable copyright laws in their jurisdiction.
 
 ## Features
 
@@ -14,6 +12,13 @@ This project is for **educational purposes only**. Users are responsible for com
 - 🔥 Trending and new manga
 - 💾 Built-in caching (5-minute default)
 - 🛡️ Support for multiple scraping methods (axios, cloudscraper, playwright)
+
+| Source | Status |
+|--------|--------|
+| MangaPill | ✅ |
+| FlameComics | ✅ |
+| MangaPark | ✅ |
+| MangaFire | ✅ |
 
 ## Installation
 
@@ -296,11 +301,6 @@ Contributions are welcome! Please ensure:
 - New sources include proper error handling
 - Data is sanitized before returning
 
-## Legal Notice
+## ⚖️ Legal Notice
 
-This tool is provided as-is for educational purposes. The developers:
-- Do not host or distribute any manga content
-- Do not encourage violation of terms of service
-- Are not responsible for how users deploy this software
-
-Use responsibly and at your own risk.
+This tool is for **educational purposes only**. The developers do not host any content, do not encourage the violation of terms of service, and are not responsible for how users deploy this software. Use responsibly and at your own risk.
