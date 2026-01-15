@@ -179,7 +179,7 @@ GET /api/mangapark/latest-anime
 
 ##### Search Manga
 ```
-GET /api/mangafire/search/:query
+GET /api/mangafire/search?q=naruto
 ```
 
 ##### Get Manga Details
