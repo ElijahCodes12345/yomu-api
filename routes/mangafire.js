@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const mangafireController = require('../controllers/mangafireController');
 
-router.get('/search/:query', mangafireController.searchManga);
+router.get('/search', mangafireController.searchManga);
 router.get('/manga/:id', mangafireController.getMangaInfo);
 router.get('/manga/:id/chapters', mangafireController.getMangaChapters);
 // Supporting path param as well for compatibility or user preference if they want strict path structures

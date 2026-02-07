@@ -2,8 +2,11 @@ const scraper = require('../models/mangafireModel');
 
 const searchManga = async (req, res) => {
     try {
-        const { query } = req.params;
+        const query = req.query.q;
         const page = req.query.page || 1;
+        if (!query) {
+            return res.status(400).json({ error: 'Search query is required' });
+        }
         const results = await scraper.search(query, page);
         res.json(results);
     } catch (error) {

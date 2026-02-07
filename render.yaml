@@ -1,0 +1,16 @@
+previews:
+  generation: automatic
+
+services:
+  - type: web
+    name: yomu-api
+    runtime: node
+    repo: https://github.com/ElijahCodes12345/yomu-api
+    branch: main
+    buildCommand: npm install
+    startCommand: node app.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000

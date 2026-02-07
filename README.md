@@ -2,9 +2,7 @@
 
 A flexible Node.js scraper for aggregating manga and novel(later) content from multiple sources. It is still under-construction.
 
-## ⚠️ Disclaimer
 
-This project is for **educational purposes only**. Users are responsible for complying with the terms of service of any websites they scrape and applicable copyright laws in their jurisdiction.
 
 ## Features
 
@@ -14,6 +12,13 @@ This project is for **educational purposes only**. Users are responsible for com
 - 🔥 Trending and new manga
 - 💾 Built-in caching (5-minute default)
 - 🛡️ Support for multiple scraping methods (axios, cloudscraper, playwright)
+
+| Source | Status |
+|--------|--------|
+| MangaPill | ✅ |
+| FlameComics | ✅ |
+| MangaPark | ✅ |
+| MangaFire | ✅ |
 
 ## Installation
 
@@ -174,7 +179,7 @@ GET /api/mangapark/latest-anime
 
 ##### Search Manga
 ```
-GET /api/mangafire/search/:query
+GET /api/mangafire/search?q=naruto
 ```
 
 ##### Get Manga Details
@@ -218,6 +223,54 @@ GET /api/mangafire/volumes/:id/:lang?
 GET /api/mangafire/:pageType
 ```
 *(pageType can be: updated, newest, added)*
+
+## Library Usage
+
+YomuAPI can be used as a library in other Node.js projects.
+
+### Installation
+
+If you are using it from another local directory:
+```bash
+npm install github:ElijahCodes12345/yomu-api
+```
+
+### Programmatic Usage
+
+```javascript
+const yomu = require('yomu-api');
+
+async function example() {
+    // 1. Use scrapers directly (no caching)
+    const hotManga = await yomu.scrapers.mangafire.scrapeHomePage();
+    
+    // 2. Use models (includes built-in 5-minute caching)
+    const results = await yomu.models.mangafire.search('Naruto');
+    console.log(`Found ${results.length} results`);
+
+    // 3. Use utilities
+    const vrf = yomu.utils.solver.generateVrf('some-id');
+}
+```
+
+### Mounting the API in your own Express app
+
+You can easily mount the YomuAPI routes into your existing Express server:
+
+```javascript
+const express = require('express');
+const yomu = require('yomu-api');
+
+const app = express();
+
+// Mount all YomuAPI routes under /api
+app.use('/api', yomu.app);
+
+app.listen(4000, () => {
+    console.log('Main server running on port 4000');
+});
+```
+
 
 ## Project Structure
 
@@ -296,11 +349,6 @@ Contributions are welcome! Please ensure:
 - New sources include proper error handling
 - Data is sanitized before returning
 
-## Legal Notice
+## ⚖️ Legal Notice
 
-This tool is provided as-is for educational purposes. The developers:
-- Do not host or distribute any manga content
-- Do not encourage violation of terms of service
-- Are not responsible for how users deploy this software
-
-Use responsibly and at your own risk.
+This tool is for **educational purposes only**. The developers do not host any content, do not encourage the violation of terms of service, and are not responsible for how users deploy this software. Use responsibly and at your own risk.

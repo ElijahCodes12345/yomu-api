@@ -24,8 +24,8 @@ class RequestManager {
   async request(url, method = 'GET', data = {}, options = {}, scrapingMethod = 'axios') {
     console.log(`[${scrapingMethod}] ${url}`);
     
-    // Determine if we should use Cloudflare bypass
-    const useCloudflare = options.useCloudflare || scrapingMethod === 'playwright-cf' || scrapingMethod === 'cloudscraper';
+    // Determine if we should use bypass
+    const useBypass = options.useBypass || scrapingMethod === 'playwright-bypass' || scrapingMethod === 'cloudscraper';
     const domain = new URL(url).hostname;
 
     const executeRequest = async (currentCookies = null, customUA = null, forcePlaywright = false) => {
@@ -92,22 +92,19 @@ class RequestManager {
               }
               
               if (Date.now() - start > limit - 5000) {
-                 throw new Error(`Cloudflare challenge resolution timed out after ${limit}ms for ${url}`);
+                 throw new Error(`Protection resolution timed out after ${limit}ms for ${url}`);
               }
 
               // Small human-like interaction
               await page.mouse.move(Math.random() * 400, Math.random() * 400);
               
-              console.log(`[RequestManager] Playwright still on challenge page... waiting. (Title: "${title}")`);
+              console.log(`[RequestManager] Playwright still on protection page... waiting. (Title: "${title}")`);
               await page.waitForTimeout(4000);
           }
-
           
           // Final check or extra wait for JS heavy sites
           await page.waitForTimeout(options.waitForTimeout || 3000);
           content = await page.content();
-
-
           const innerText = await page.evaluate(() => document.body?.innerText || '');
 
           // Try to parse text as JSON first
@@ -156,14 +153,14 @@ class RequestManager {
       const result = response.data;
 
       // Check if we hit a challenge page despite 200 status
-      if (useCloudflare && typeof result === 'string') {
+      if (useBypass && typeof result === 'string') {
         const isChallenge = result.includes('id="cf-challenge"') || 
                           result.includes('__cf_chl_opt') || 
                           result.includes('<title>Just a moment...</title>') ||
                           result.includes('Checking your browser');
         
         if (isChallenge) {
-          throw new Error('Cloudflare challenge detected in response');
+          throw new Error('Bot protection detected in response');
         }
       }
 
@@ -174,7 +171,7 @@ class RequestManager {
     try {
       let cookies = null;
       let cachedUA = null;
-      if (useCloudflare) {
+      if (useBypass) {
         const cached = await CookieManager.getCookies(domain);
         if (cached) {
             cookies = cached.cookies;
@@ -183,13 +180,12 @@ class RequestManager {
       }
 
       return await executeRequest(cookies, cachedUA);
-
     } catch (error) {
       const is403 = error.response && error.response.status === 403;
-      const isCF = error.message.includes('Cloudflare') || error.message.includes('challenge');
+      const isCF = error.message.includes('protection') || error.message.includes('challenge') || error.message.includes('Cloudflare');
 
-      if (useCloudflare && (is403 || isCF)) {
-        console.log(`[RequestManager] 403 or Cloudflare detected for ${domain}. Attempting bypass...`);
+      if (useBypass && (is403 || isCF)) {
+        console.log(`[RequestManager] 403 or Protection detected for ${domain}. Attempting bypass...`);
         try {
           const { cookies: freshCookies, userAgent, content, text } = await BypassSolver.getCookies(url, true);
           
@@ -218,7 +214,6 @@ class RequestManager {
             return content;
           }
 
-
           console.log(`[RequestManager] Bypass successful. Retrying request with fresh cookies (UA Sync)...`);
           
           try {
@@ -230,9 +225,10 @@ class RequestManager {
 
         } catch (bypassError) {
           console.error(`[RequestManager] Bypass failed:`, bypassError.message);
-          throw new Error(`Cloudflare bypass failed for ${url}: ${bypassError.message}`);
+          throw new Error(`Bypass failed for ${url}: ${bypassError.message}`);
         }
       }
+
 
 
       if (error.response) {
