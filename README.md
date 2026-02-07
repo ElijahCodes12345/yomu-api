@@ -224,6 +224,54 @@ GET /api/mangafire/:pageType
 ```
 *(pageType can be: updated, newest, added)*
 
+## Library Usage
+
+YomuAPI can be used as a library in other Node.js projects.
+
+### Installation
+
+If you are using it from another local directory:
+```bash
+npm install github:ElijahCodes12345/yomu-api
+```
+
+### Programmatic Usage
+
+```javascript
+const yomu = require('yomu-api');
+
+async function example() {
+    // 1. Use scrapers directly (no caching)
+    const hotManga = await yomu.scrapers.mangafire.scrapeHomePage();
+    
+    // 2. Use models (includes built-in 5-minute caching)
+    const results = await yomu.models.mangafire.search('Naruto');
+    console.log(`Found ${results.length} results`);
+
+    // 3. Use utilities
+    const vrf = yomu.utils.solver.generateVrf('some-id');
+}
+```
+
+### Mounting the API in your own Express app
+
+You can easily mount the YomuAPI routes into your existing Express server:
+
+```javascript
+const express = require('express');
+const yomu = require('yomu-api');
+
+const app = express();
+
+// Mount all YomuAPI routes under /api
+app.use('/api', yomu.app);
+
+app.listen(4000, () => {
+    console.log('Main server running on port 4000');
+});
+```
+
+
 ## Project Structure
 
 ```
