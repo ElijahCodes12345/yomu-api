@@ -4,6 +4,11 @@ const mangaPillRoutes = require('./routes/mangaPill');
 const flameComicsRoutes = require('./routes/flamecomics');
 const mangaparkRoutes = require('./routes/mangapark');
 const mangafireRoutes = require('./routes/mangafire');
+const weebcentralRoutes = require('./routes/weebcentral');
+const mangadotRoutes = require('./routes/mangadot');
+const novelbuddyRoutes = require('./routes/novelbuddy');
+const novelfireRoutes = require('./routes/novelfire');
+const freewebnovelRoutes = require('./routes/freewebnovel');
 
 const app = express();
 
@@ -17,14 +22,21 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Routes
+// Manga Routes
 app.use('/api/mangapill', mangaPillRoutes);
 app.use('/api/flamecomics', flameComicsRoutes);
 app.use('/api/mangapark', mangaparkRoutes);
 app.use('/api/mangafire', mangafireRoutes);
+app.use('/api/weebcentral', weebcentralRoutes);
+app.use('/api/mangadot', mangadotRoutes);
+
+// Novel Routes
+app.use('/api/novelbuddy', novelbuddyRoutes);
+app.use('/api/novelfire', novelfireRoutes);
+app.use('/api/freewebnovel', freewebnovelRoutes);
 
 app.get('/', (req, res) => {
-  res.json({ message: 'YomuAPI - Manga Scraper API is running!' });
+  res.json({ message: 'YomuAPI - Manga & Novel Scraper API is running!' });
 });
 
 // Error handling middleware

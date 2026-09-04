@@ -44,16 +44,20 @@ async function launchBrowser() {
         ? String(process.env.CHROME_HEADLESS).toLowerCase() === 'true'
         : null;
 
+    const baseArgs = [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-blink-features=AutomationControlled',
+        '--disable-gpu'
+    ];
+
+    if (isServerless) {
+        baseArgs.push('--no-zygote', '--single-process');
+    }
+
     const launchOptions = {
-        args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--disable-blink-features=AutomationControlled',
-            '--disable-gpu',
-            '--no-zygote',
-            '--single-process'
-        ],
+        args: baseArgs,
         headless: envHeadless !== null ? envHeadless : true,
         timeout: 60000
     };
@@ -81,18 +85,41 @@ async function launchBrowser() {
         launchOptions.args.push('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
     }
 
-    console.log(`Launching browser (Serverless: ${isServerless}, Headless: ${launchOptions.headless})`);
+    // System browser path detection fallback for local machines
+    function findSystemBrowser() {
+        const candidates = [
+            'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+            'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+            'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
+            'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+            '/usr/bin/google-chrome',
+            '/usr/bin/chromium',
+            '/usr/bin/chromium-browser',
+            '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+        ];
+        return candidates.find(p => existsSync(p)) || null;
+    }
+
+    if (!isServerless && !launchOptions.executablePath) {
+        const systemBrowser = findSystemBrowser();
+        if (systemBrowser) {
+            launchOptions.executablePath = systemBrowser;
+        }
+    }
+
+    console.log(`Launching browser (Serverless: ${isServerless}, Headless: ${launchOptions.headless}, Executable: ${launchOptions.executablePath || 'default'})`);
     
     try {
         return await chromium.launch(launchOptions);
     } catch (error) {
         console.error('Browser launch failed:', error.message);
         
-        // Final desperate attempt with zero custom args
-        console.log('Final fallback attempt...');
+        // Final fallback attempt with system browser if not tried
+        const systemBrowser = findSystemBrowser();
+        console.log('Final fallback attempt with system browser:', systemBrowser);
         const minimalOptions = { 
             headless: true,
-            executablePath: launchOptions.executablePath 
+            executablePath: launchOptions.executablePath || systemBrowser || undefined
         };
         return await chromium.launch(minimalOptions);
     }
