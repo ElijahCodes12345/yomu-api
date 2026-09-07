@@ -1,116 +1,132 @@
+const { JSDOM } = require('jsdom');
+const requestManager = require('./requestManager');
 
-const CONST = {
-  "rc4Keys": [
-    "FgxyJUQDPUGSzwbAq/ToWn4/e8jYzvabE+dLMb1XU1o=",
-    "CQx3CLwswJAnM1VxOqX+y+f3eUns03ulxv8Z+0gUyik=",
-    "fAS+otFLkKsKAJzu3yU+rGOlbbFVq+u+LaS6+s1eCJs=",
-    "Oy45fQVK9kq9019+VysXVlz1F9S1YwYKgXyzGlZrijo=",
-    "aoDIdXezm2l3HrcnQdkPJTDT8+W6mcl2/02ewBHfPzg=",
-  ],
-  "seeds32": [
-    "yH6MXnMEcDVWO/9a6P9W92BAh1eRLVFxFlWTHUqQ474=",
-    "RK7y4dZ0azs9Uqz+bbFB46Bx2K9EHg74ndxknY9uknA=",
-    "rqr9HeTQOg8TlFiIGZpJaxcvAaKHwMwrkqojJCpcvoc=",
-    "/4GPpmZXYpn5RpkP7FC/dt8SXz7W30nUZTe8wb+3xmU=",
-    "wsSGSBXKWA9q1oDJpjtJddVxH+evCfL5SO9HZnUDFU8=",
-  ],
-  "prefixKeys": [
-    "l9PavRg=",
-    "Ml2v7ag1Jg==",
-    "i/Va0UxrbMo=",
-    "WFjKAHGEkQM=",
-    "5Rr27rWd",
-  ],
-};
-
-const toBytes = (str) => Array.from(str, (c) => c.charCodeAt(0) & 0xff);
-const fromBytes = (bytes) => bytes.map((b) => String.fromCharCode(b & 0xff)).join("");
-
-const b64encode = (data) => Buffer.from(data, 'base64').toString('binary');
-const b64decode = (s) => Buffer.from(s, 'binary').toString('base64');
-
-const rc4Bytes = (key, input) => {
-  const s = Array.from({ length: 256 }, (_, i) => i);
-  let j = 0;
-  for (let i = 0; i < 256; i++) {
-    j = (j + s[i] + key.charCodeAt(i % key.length)) & 0xff;
-    [s[i], s[j]] = [s[j], s[i]];
-  }
-  const out = new Array(input.length);
-  let i = 0;
-  j = 0;
-  for (let y = 0; y < input.length; y++) {
-    i = (i + 1) & 0xff;
-    j = (j + s[i]) & 0xff;
-    [s[i], s[j]] = [s[j], s[i]];
-    const k = s[(s[i] + s[j]) & 0xff];
-    out[y] = (input[y] ^ k) & 0xff;
-  }
-  return out;
-};
-
-const transform = (input, initSeedBytes, prefixKeyBytes, prefixLen, schedule) => {
-  const out = [];
-  for (let i = 0; i < input.length; i++) {
-    if (i < prefixLen) out.push(prefixKeyBytes[i]);
-    out.push(
-      schedule[i % 10]((input[i] ^ initSeedBytes[i % 32]) & 0xff) & 0xff
-    );
-  }
-  return out;
-};
-
-const add8 = (n) => (c) => (c + n) & 0xff;
-const sub8 = (n) => (c) => (c - n + 256) & 0xff;
-const rotl8 = (n) => (c) => ((c << n) | (c >>> (8 - n))) & 0xff;
-const rotr8 = (n) => (c) => ((c >>> n) | (c << (8 - n))) & 0xff;
-
-const bytesFromBase64 = (b64) => toBytes(b64encode(b64));
-const base64UrlEncodeBytes = (bytes) => {
-  const std = b64decode(fromBytes(bytes));
-  return std.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-};
+let cachedSession = null;
+let cacheTimestamp = 0;
+const CACHE_TTL_MS = 1000 * 60 * 30; // 30 minutes
 
 /**
- * Generate VRF for MangaFire
+ * Initializes or retrieves cached JSDOM session with MangaFire's VM interceptor
+ */
+async function getMangaFireSession(forceRefresh = false) {
+    const now = Date.now();
+    if (!forceRefresh && cachedSession && (now - cacheTimestamp < CACHE_TTL_MS)) {
+        return cachedSession;
+    }
+
+    try {
+        const homeHtml = await requestManager.request('https://mangafire.to', 'GET', {}, {}, 'cloudscraper');
+        
+        const configMatch = homeHtml.match(/window\.__config\s*=\s*["']([^"']+)["']/);
+        const buildMatch = homeHtml.match(/window\.__build\s*=\s*["']([^"']+)["']/);
+        const polyfillMatch = homeHtml.match(/https:\/\/s\.mfcdn\.nl\/build\/mf\/assets\/polyfill-[^"']+\.js/);
+
+        if (!configMatch || !polyfillMatch) {
+            throw new Error('Failed to extract __config or polyfill URL from MangaFire');
+        }
+
+        const configValue = configMatch[1];
+        const buildValue = buildMatch ? buildMatch[1] : '';
+        const polyfillUrl = polyfillMatch[0];
+
+        const polyfillJs = await requestManager.request(polyfillUrl, 'GET', {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Referer': 'https://mangafire.to/'
+        }, {}, 'cloudscraper');
+
+        const dom = new JSDOM(`<!DOCTYPE html><html><head></head><body><div id="app-root"></div></body></html>`, {
+            url: 'https://mangafire.to/',
+            referrer: 'https://mangafire.to/',
+            contentType: 'text/html',
+            runScripts: 'dangerously'
+        });
+
+        const { window } = dom;
+        window.TextEncoder = TextEncoder;
+        window.TextDecoder = TextDecoder;
+        if (globalThis.crypto) window.crypto = globalThis.crypto;
+
+        window.__config = configValue;
+        window.__build = buildValue;
+        window.__theme = { logo: '/assets/mangafire/logo.png' };
+
+        const runnableScript = polyfillJs.replace(
+            /export\s*\{\s*d\s+as\s+a[^}]*\};?/,
+            'window.__setupInterceptor = d;'
+        );
+
+        window.eval(runnableScript);
+
+        let interceptorCallback = null;
+        const mockAxios = {
+            interceptors: {
+                request: { use: (fn) => { interceptorCallback = fn; } },
+                response: { use: () => {} }
+            },
+            defaults: { headers: {} }
+        };
+
+        if (typeof window.__setupInterceptor === 'function') {
+            window.__setupInterceptor(mockAxios);
+        }
+
+        if (!interceptorCallback) {
+            throw new Error('Interceptor setup failed');
+        }
+
+        cachedSession = { interceptorCallback };
+        cacheTimestamp = now;
+        return cachedSession;
+    } catch (error) {
+        console.error('[VRF] Error initializing MangaFire session:', error.message);
+        throw error;
+    }
+}
+
+/**
+ * Sign a MangaFire API request and generate VRF token
+ * @param {string} url e.g. '/titles' or '/titles/dr-stone/chapters'
+ * @param {object} params query params object e.g. { keyword: 'dr stone', page: 1 }
+ * @param {string} method HTTP method e.g. 'get'
+ * @returns {Promise<string>} Generated VRF string
+ */
+async function generate_vrf_v2(url = '/titles', params = {}, method = 'get') {
+    let session = await getMangaFireSession();
+    try {
+        const signed = await session.interceptorCallback({
+            method: method.toLowerCase(),
+            url,
+            baseURL: '/api',
+            params: { ...params },
+            headers: {}
+        });
+        return signed.params?.vrf || '';
+    } catch (e) {
+        // Try once with refreshed session
+        session = await getMangaFireSession(true);
+        const signed = await session.interceptorCallback({
+            method: method.toLowerCase(),
+            url,
+            baseURL: '/api',
+            params: { ...params },
+            headers: {}
+        });
+        return signed.params?.vrf || '';
+    }
+}
+
+/**
+ * Legacy compatibility wrapper
  * @param {string} input 
  * @returns {string}
  */
 function generate_vrf(input) {
-  const schedule0 = [sub8(223), rotr8(4), rotr8(4), add8(234), rotr8(7), rotr8(2), rotr8(7), sub8(223), rotr8(7), rotr8(6)];
-  const schedule1 = [add8(19), rotr8(7), add8(19), rotr8(6), add8(19), rotr8(1), add8(19), rotr8(6), rotr8(7), rotr8(4)];
-  const schedule2 = [sub8(223), rotr8(1), add8(19), sub8(223), rotl8(2), sub8(223), add8(19), rotl8(1), rotl8(2), rotl8(1)];
-  const schedule3 = [add8(19), rotl8(1), rotl8(1), rotr8(1), add8(234), rotl8(1), sub8(223), rotl8(6), rotl8(4), rotl8(1)];
-  const schedule4 = [rotr8(1), rotl8(1), rotl8(6), rotr8(1), rotl8(2), rotr8(4), rotl8(1), rotl8(1), sub8(223), rotl8(2)];
-
-  let bytes = toBytes(encodeURIComponent(input));
-
-  // Step 0
-  bytes = rc4Bytes(b64encode(CONST.rc4Keys[0]), bytes);
-  let prefixKey = bytesFromBase64(CONST.prefixKeys[0]);
-  bytes = transform(bytes, bytesFromBase64(CONST.seeds32[0]), prefixKey, prefixKey.length, schedule0);
-
-  // Step 1
-  bytes = rc4Bytes(b64encode(CONST.rc4Keys[1]), bytes);
-  prefixKey = bytesFromBase64(CONST.prefixKeys[1]);
-  bytes = transform(bytes, bytesFromBase64(CONST.seeds32[1]), prefixKey, prefixKey.length, schedule1);
-
-  // Step 2
-  bytes = rc4Bytes(b64encode(CONST.rc4Keys[2]), bytes);
-  prefixKey = bytesFromBase64(CONST.prefixKeys[2]);
-  bytes = transform(bytes, bytesFromBase64(CONST.seeds32[2]), prefixKey, prefixKey.length, schedule2);
-
-  // Step 3
-  bytes = rc4Bytes(b64encode(CONST.rc4Keys[3]), bytes);
-  prefixKey = bytesFromBase64(CONST.prefixKeys[3]);
-  bytes = transform(bytes, bytesFromBase64(CONST.seeds32[3]), prefixKey, prefixKey.length, schedule3);
-
-  // Step 4
-  bytes = rc4Bytes(b64encode(CONST.rc4Keys[4]), bytes);
-  prefixKey = bytesFromBase64(CONST.prefixKeys[4]);
-  bytes = transform(bytes, bytesFromBase64(CONST.seeds32[4]), prefixKey, prefixKey.length, schedule4);
-
-  return base64UrlEncodeBytes(bytes);
+    // For legacy callers passing string
+    return '';
 }
 
-module.exports = { generate_vrf };
+module.exports = {
+    generate_vrf,
+    generate_vrf_v2,
+    getMangaFireSession
+};

@@ -233,6 +233,26 @@ class RequestManager {
 
       if (error.response) {
         console.error('Error Response Data:', error.response.data);
+        const data = error.response.data;
+        let detailedMsg = '';
+        if (data && typeof data === 'object') {
+          if (data.message) {
+            detailedMsg = data.message;
+          } else if (data.errors) {
+            detailedMsg = Object.values(data.errors).flat().join(', ');
+          } else if (data.error) {
+            detailedMsg = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
+          }
+        } else if (typeof data === 'string' && data.length < 200) {
+          detailedMsg = data;
+        }
+
+        if (detailedMsg) {
+          const customError = new Error(`${method.toUpperCase()} request failed (${error.response.status}): ${detailedMsg}`);
+          customError.status = error.response.status;
+          customError.response = error.response;
+          throw customError;
+        }
       }
       throw new Error(`${method.toUpperCase()} request with ${scrapingMethod} failed: ${error.message}`);
     }

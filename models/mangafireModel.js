@@ -17,6 +17,27 @@ class MangaFireModel {
     );
   }
 
+  browse = async (filters = {}) => {
+    const key = `mangafire_browse_${JSON.stringify(filters)}`;
+    return await this.cache.wrap(
+      key,
+      () => this.scraper.browse(filters)
+    );
+  }
+
+  getFilterOptions = async () => {
+    const key = `mangafire_filter_options`;
+    return await this.cache.wrap(
+      key,
+      () => this.scraper.getFilterOptions()
+    );
+  }
+
+  getRandomManga = async () => {
+    // Random shouldn't be cached for fresh results
+    return await this.scraper.getRandomManga();
+  }
+
   getMangaInfo = async (id) => {
     const key = `mangafire_info_${id}`;
     return await this.cache.wrap(
@@ -27,11 +48,19 @@ class MangaFireModel {
 
   scrapeMangaInfo = this.getMangaInfo;
 
-  getChapters = async (mangaId, language) => {
-    const key = `mangafire_chapters_${mangaId}_${language || 'all'}`;
+  getChapters = async (mangaId, language = 'en', page = 1) => {
+    const key = `mangafire_chapters_${mangaId}_${language || 'en'}_${page}`;
     return await this.cache.wrap(
       key,
-      () => this.scraper.getChapters(mangaId, language)
+      () => this.scraper.getChapters(mangaId, language, page)
+    );
+  }
+
+  getLanguages = async (mangaId) => {
+    const key = `mangafire_languages_${mangaId}`;
+    return await this.cache.wrap(
+      key,
+      () => this.scraper.getLanguages(mangaId)
     );
   }
 
